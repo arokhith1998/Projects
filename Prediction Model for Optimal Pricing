@@ -1,0 +1,73 @@
+```{r Question 1A}
+#INSERT CODE HERE
+data <- read.csv("C:/Users/arokh/Downloads/Homework 4 Data - 436(R).csv")
+data <- data[data$brand==9,]
+```
+
+**Question 1B:**
+```{r Question 1B}
+#INSERT CODE HERE
+thisLM <- lm(log(units)~isFeature+price, data = data)
+summary(thisLM)
+```
+
+**Question 1C:**
+```{r Question 1C}
+#INSERT CODE HERE
+possiblePrices <- data.frame(price = seq(0,10,0.01), isFeature = FALSE)
+```
+
+**Question 1D:**
+```{r Question 1D}
+#INSERT CODE HERE
+possiblePrices$predictedDemand = exp(predict(thisLM,possiblePrices))
+```
+
+**Question 1E:**
+```{r Question 1E}
+#INSERT CODE HERE
+marginalCost <- mean(data$marginalCost)
+possiblePrices$profitMargin <- possiblePrices$price - marginalCost
+```
+
+**Question 1F:**
+```{r Question 1F}
+#INSERT CODE HERE
+possiblePrices$expectedProfit <- possiblePrices$predictedDemand * possiblePrices$profitMargin
+
+```
+
+**Question 1G:**
+```{r Question 1G}
+#INSERT CODE HERE
+optPrice <- possiblePrices$price[which.max(possiblePrices$expectedProfit)]
+#Keep 'optPrice' here so we can see your optimal price
+optPrice
+```
+
+**Question 1H:**
+```{r Question 1H}
+#INSERT CODE HERE
+thisLM <- lm(log(units)~price, data = data)
+possiblePrices <- data.frame(price = seq(0,10,0.01))
+possiblePrices$predictedDemand <- exp(predict(thisLM,possiblePrices))
+possiblePrices$profitMargin <- possiblePrices$price - marginalCost
+possiblePrices$expectedProfit <- possiblePrices$predictedDemand * possiblePrices$profitMargin
+optPrice <- possiblePrices$price[which.max(possiblePrices$expectedProfit)]
+
+#Keep 'optPrice' here so we can see your optimal price
+optPrice
+```
+
+**Question 1I:**
+```{r Question 1I}
+#INSERT CODE HERE
+thisLM <- lm(log(units)~isFeature*price, data = data)
+possiblePrices <- data.frame(price = seq(0,10,0.01), isFeature = TRUE)
+possiblePrices$predictedDemand <- exp(predict(thisLM,possiblePrices))
+possiblePrices$profitMargin <- possiblePrices$price - marginalCost
+possiblePrices$expectedProfit <- possiblePrices$predictedDemand * possiblePrices$profitMargin
+optPrice <- possiblePrices$price[which.max(possiblePrices$expectedProfit)]
+
+#Keep 'optPrice' here so we can see your optimal price
+optPrice
