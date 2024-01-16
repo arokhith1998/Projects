@@ -1,0 +1,209 @@
+```{1}
+#TRAIN AND ESTIMATE YOUR FIRST MODEL (WITHOUT REPORTS) HERE, starting on line 17
+library(caret)
+library(dplyr)
+#Last line should store a model in model1A as below
+#model1A = lm(card~expenditure+owner,data=fullFile)
+data <- read.csv("C:/Users/arokh/OneDrive/Documents/Predictive & Causal Analytics/Assignment #3/Student Data 9.csv")
+data1 <- data[-2] #Removing Reports
+
+# Define independent variables
+independent_vars1 <- setdiff(names(data1), "card")
+
+# Initialize variables for storing results
+best_combination1 <- NULL
+lowest_mse1 <- Inf
+
+# Define K-Fold cross-validation
+k <- 10
+folds <- createFolds(data1$card, k = k, list = TRUE)
+
+# Function to create a formula with interaction terms
+create_formula <- function(vars) {
+    terms <- paste(vars, collapse = " + ")
+    
+    # Check if there are at least two variables for interaction
+    if (length(vars) > 1) {
+        interactions <- paste(combn(vars, 2, simplify = TRUE, FUN = function(x) {
+            paste(x, collapse = "*")
+        }), collapse = " + ")
+        formula_str <- paste("card ~", terms, "+", interactions)
+    } else {
+        formula_str <- paste("card ~", terms)
+    }
+    
+    return(as.formula(formula_str))
+}
+
+
+# Iterate through different combinations of variables
+for(i in 1:length(independent_vars1)) {
+    combinations1 <- combn(independent_vars1, i, simplify = FALSE)
+    
+    for(vars_combination1 in combinations1) {
+        mse_list1 <- c()
+        
+        for(fold in folds) {
+            # Include 'card' in the subset of variables
+            vars_with_dependent1 <- c(vars_combination1, "card")
+            
+            # Splitting data into training and test sets
+            train_data1 <- data1[-fold, vars_with_dependent1, drop = FALSE]
+            test_data1 <- data1[fold, vars_with_dependent1, drop = FALSE]
+            
+            # Model fitting with interaction terms
+            formula1 <- create_formula(vars_combination1)
+            model1 <- lm(formula1, data = train_data1)
+            # Model prediction and MSE calculation
+            predictions1 <- predict(model1, test_data1)
+            mse1 <- mean((data1$card[fold] - predictions1)^2)
+            mse_list1 <- c(mse_list1, mse1)
+
+        }
+        # Calculate average MSE for the current combination
+        avg_mse1 <- mean(mse_list1)
+        
+        # Update the best combination if the current one is better
+        if(avg_mse1 < lowest_mse1) {
+            lowest_mse1 <- avg_mse1
+            best_combination1 <- vars_combination1
+            best_formula1 <- formula1
+        }
+    }
+}
+
+# Output the best combination and its MSE
+print(paste("Best combination: ", toString(best_combination1)))
+print(paste("Lowest MSE: ", lowest_mse1))
+print(best_formula1)
+
+# Model 1A: Linear Regression excluding 'reports'
+model1A <- lm(best_formula1, data = train_data1)
+summary(model1A)
+```
+
+
+
+**Question 1B:**
+```{2}
+#TRAIN AND ESTIMATE YOUR SECOND MODEL (WITH REPORTS) HERE, starting on line 30
+
+#Last line should store a model in model1B as below
+# Define independent variables
+independent_vars <- setdiff(names(data), "card")
+
+# Initialize variables for storing results
+best_combination <- NULL
+lowest_mse <- Inf
+
+# Define K-Fold cross-validation
+k <- 10
+folds <- createFolds(data$card, k = k, list = TRUE)
+
+# Function to create a formula with interaction terms
+create_formula <- function(vars) {
+    terms <- paste(vars, collapse = " + ")
+    
+    # Check if there are at least two variables for interaction
+    if (length(vars) > 1) {
+        interactions <- paste(combn(vars, 2, simplify = TRUE, FUN = function(x) {
+            paste(x, collapse = "*")
+        }), collapse = " + ")
+        formula_str <- paste("card ~", terms, "+", interactions)
+    } else {
+        formula_str <- paste("card ~", terms)
+    }
+    
+    return(as.formula(formula_str))
+}
+
+
+# Iterate through different combinations of variables
+for(i in 1:length(independent_vars)) {
+    combinations <- combn(independent_vars, i, simplify = FALSE)
+    
+    for(vars_combination in combinations) {
+        mse_list <- c()
+        
+        for(fold in folds) {
+            # Include 'card' in the subset of variables
+            vars_with_dependent <- c(vars_combination, "card")
+            
+            # Splitting data into training and test sets
+            train_data <- data[-fold, vars_with_dependent, drop = FALSE]
+            test_data <- data[fold, vars_with_dependent, drop = FALSE]
+            
+            # Model fitting with interaction terms
+            formula <- create_formula(vars_combination)
+            model <- lm(formula, data = train_data)
+            # Model prediction and MSE calculation
+            predictions <- predict(model, test_data)
+            mse <- mean((data$card[fold] - predictions)^2)
+            mse_list <- c(mse_list, mse)
+        }
+        
+        # Calculate average MSE for the current combination
+        avg_mse <- mean(mse_list)
+        
+        # Update the best combination if the current one is better
+        if(avg_mse < lowest_mse) {
+            lowest_mse <- avg_mse
+            best_combination <- vars_combination
+            best_formula <- formula
+        }
+    }
+}
+
+# Output the best combination and its MSE
+print(paste("Best combination: ", toString(best_combination)))
+print(paste("Lowest MSE: ", lowest_mse))
+print(best_formula)
+
+# Model 1B: LM Model
+model1B <- lm(best_formula, data = train_data)
+summary(model1B)
+```
+
+```{r, quietly=FALSE,warning=FALSE,echo=FALSE,results=TRUE}
+#The following code checks if you generated the models correctly.  Run it, and if you don't see any of the error messages below. Do not alter it any way - not even to change the variable names.  If not, please correct, or contact the TAs for help 
+
+
+#This reduces the file size in some cases fringe cases
+model1A$cv.list = NULL
+model1A$cv.oof.fit.tab = NULL
+model1A$varmod = NULL
+
+model1B$cv.list = NULL
+model1B$cv.oof.fit.tab = NULL
+model1B$varmod = NULL
+
+isError = FALSE
+
+if(!(class(model1A)=='earth'|class(model1A)=='lm')){
+	print('model1A is not an earth or lm model.  Be sure to submit a statistical model here.')
+  isError = TRUE}
+	
+if(!(class(model1B)=='earth'|class(model1B)=='lm')){
+	print('model1B is not an earth or lm model.  Be sure to submit a statistical model here.')
+  isError = TRUE}
+
+
+if(class(model1A)=='earth'){
+	noReport = !(grepl('reports',paste(rownames(model1A$coefficients),collapse=' ')))
+}  else {
+	noReport = !(grepl('reports',paste(names(model1A$coefficients),collapse=' ')))
+}
+
+if(!noReport){
+	print('Make sure you do not use the report variable in model1A')
+  isError = TRUE
+}
+
+if(!isError){
+  save(model1A, model1B, file = 'MyModels.Rdata')
+  print('MyModels.Rdata generated!  Please submit this file via blackboard.')
+} else {
+  print('Your code does not produce the right output.  Please correct your code, or get in touch with the TA.')
+}
+
+```
