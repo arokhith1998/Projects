@@ -1,0 +1,285 @@
+data <- read.csv("C:/Users/arokh/Downloads/Cost of Living - USA - Sheet1.csv")
+summary(data)
+head(data)
+# Load necessary libraries
+library(readr)
+library(dplyr)
+
+# Filter out the relevant columns and rows
+relevant_data <- data %>%
+    select(State, Meal_Inexpensive_Restaurant_USD, Basic_Electricity_Heating_Cooling_Water_Garbage_for_85m2_Apartment_USD, Apartment_1_bedroom_in_City_Centre_USD, Apartment_1_bedroom_Outside_of_Centre_USD) %>%
+    filter(!is.na(State))
+
+# Calculate average costs for California
+california_averages <- relevant_data %>%
+    filter(State == "California") %>%
+    summarise(
+        Avg_Meal = mean(Meal_Inexpensive_Restaurant_USD, na.rm = TRUE),
+        Avg_Utilities = mean(Basic_Electricity_Heating_Cooling_Water_Garbage_for_85m2_Apartment_USD, na.rm = TRUE),
+        Avg_Rent = mean((Apartment_1_bedroom_in_City_Centre_USD + Apartment_1_bedroom_Outside_of_Centre_USD)/2, na.rm = TRUE)
+    )
+
+# Calculate national averages (excluding California)
+national_averages <- relevant_data %>%
+    filter(State != "California") %>%
+    summarise(
+        Avg_Meal = mean(Meal_Inexpensive_Restaurant_USD, na.rm = TRUE),
+        Avg_Utilities = mean(Basic_Electricity_Heating_Cooling_Water_Garbage_for_85m2_Apartment_USD, na.rm = TRUE),
+        Avg_Rent = mean((Apartment_1_bedroom_in_City_Centre_USD + Apartment_1_bedroom_Outside_of_Centre_USD)/2, na.rm = TRUE)
+    )
+
+# Compare California vs National Averages
+comparison <- rbind(california_averages, national_averages)
+row.names(comparison) <- c("California", "National Average")
+
+# Print the comparison
+print(comparison)
+
+# Load necessary libraries
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+# Assuming you've already computed 'california_averages' and 'national_averages'
+# and merged them into a dataframe called 'comparison'
+# (Refer to the previous R code for the computation part)
+
+# Add row names as a column to the dataframe
+comparison_long <- comparison_long %>%
+    mutate(Location = rownames(comparison_long))
+
+# Plot for Meal
+ggplot(subset(comparison_long, Category == "Avg_Meal"), aes(x = Location, y = Average, fill = Category)) +
+    geom_bar(stat = "identity", position = position_dodge()) +
+    labs(title = "Average Cost of Meals: California vs National Average", x = "", y = "Average Cost (USD)") +
+    scale_x_discrete(labels = c("California", "National Average")) +
+    theme_minimal()
+
+# Plot for Utilities
+ggplot(subset(comparison_long, Category == "Avg_Utilities"), aes(x = Location, y = Average, fill = Category)) +
+    geom_bar(stat = "identity", position = position_dodge()) +
+    labs(title = "Average Utilities Cost: California vs National Average", x = "", y = "Average Cost (USD)") +
+    scale_x_discrete(labels = c("California", "National Average")) +
+    theme_minimal()
+
+# Plot for Rent
+ggplot(subset(comparison_long, Category == "Avg_Rent"), aes(x = Location, y = Average, fill = Category)) +
+    geom_bar(stat = "identity", position = position_dodge()) +
+    labs(title = "Average Rent Cost: California vs National Average", x = "", y = "Average Rent (USD)") +
+    scale_x_discrete(labels = c("California", "National Average")) +
+    theme_minimal()
+
+# Load necessary libraries
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+# Load the dataset
+data <- read_csv("path_to_your_dataset.csv")
+
+# Filter out the relevant columns and rows for accessibility related costs
+relevant_data <- data %>%
+    select(State, One.way_Ticket_Local_Transport_USD, Monthly_Pass_Regular_Price_USD, Taxi_Start_Normal_Tariff_USD, Taxi_1km_Normal_Tariff_USD, Taxi_1hour_Waiting_Normal_Tariff_USD) %>%
+    filter(!is.na(State))
+
+# Calculate average costs for California
+california_averages <- relevant_data %>%
+    filter(State == "California") %>%
+    summarise(
+        Avg_OneWayTicket = mean(One.way_Ticket_Local_Transport_USD, na.rm = TRUE),
+        Avg_MonthlyPass = mean(Monthly_Pass_Regular_Price_USD, na.rm = TRUE),
+        Avg_TaxiStart = mean(Taxi_Start_Normal_Tariff_USD, na.rm = TRUE),
+        Avg_Taxi1km = mean(Taxi_1km_Normal_Tariff_USD, na.rm = TRUE),
+        Avg_Taxi1hour = mean(Taxi_1hour_Waiting_Normal_Tariff_USD, na.rm = TRUE)
+    )
+
+# Calculate national averages (excluding California)
+national_averages <- relevant_data %>%
+    filter(State != "California") %>%
+    summarise(
+        Avg_OneWayTicket = mean(One.way_Ticket_Local_Transport_USD, na.rm = TRUE),
+        Avg_MonthlyPass = mean(Monthly_Pass_Regular_Price_USD, na.rm = TRUE),
+        Avg_TaxiStart = mean(Taxi_Start_Normal_Tariff_USD, na.rm = TRUE),
+        Avg_Taxi1km = mean(Taxi_1km_Normal_Tariff_USD, na.rm = TRUE),
+        Avg_Taxi1hour = mean(Taxi_1hour_Waiting_Normal_Tariff_USD, na.rm = TRUE)
+    )
+
+# Merge California and National Averages
+comparison <- rbind(california_averages, national_averages)
+row.names(comparison) <- c("California", "National Average")
+
+comparison_long <- comparison %>%
+    pivot_longer(cols = starts_with("Avg_"), names_to = "Category", values_to = "Average")
+
+# Since the rownames are 'California' and 'National Average', we can create the Location column based on these
+comparison_long$Location <- rep(c("California", "National Average"), each = nrow(comparison_long) / 2)
+
+# Improve the plot
+ggplot(comparison_long, aes(x = Category, y = Average, fill = Location)) +
+    geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+    scale_fill_manual(values = c("California" = "blue", "National Average" = "red")) +
+    labs(title = "Comparison of Accessibility Costs",
+         subtitle = "California vs National Average",
+         x = "Category of Transportation",
+         y = "Average Cost (USD)") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+          legend.title = element_blank(),
+          plot.title = element_text(size = 14, face = "bold"),
+          plot.subtitle = element_text(size = 12),
+          axis.title = element_text(size = 12, face = "bold")) +
+    geom_text(aes(label = sprintf("%.2f", Average)), position = position_dodge(width = 0.7), vjust = -0.25, size = 3)
+
+
+comparison_data_long <-read_csv("C:/Users/arokh/Downloads/comparison_data_long.csv")
+
+# Assuming comparison_data_long is already loaded
+
+# Google's branding colors
+google_colors <- c("California" = "#4285F4", "National Average" = "#EA4335") # Blue and Red from Google's palette
+
+# Create a comparison plot with Google's color palette and a transparent background
+# Create a comparison plot with adjusted x-axis labels
+ggplot(comparison_data_long, aes(x = Category, y = Average, fill = Location)) +
+    geom_bar(stat = "identity", position = position_dodge()) +
+    scale_fill_manual(values = google_colors) +
+    scale_x_discrete(breaks = c("Average_Monthly_Net_Salary_After_Tax_USD", 
+                                "Price_per_Square_Meter_to_Buy_Apartment_in_City_Centre_USD",
+                                "Price_per_Square_Meter_to_Buy_Apartment_Outside_of_Centre_USD"),
+                     labels = c("Monthly Net Salary", "Price per Sq Meter Inside City", "Price per Sq Meter Outside City")) +
+    labs(title = "Business Cost Comparison: California vs National Average",
+         x = "Cost Category", y = "Average Cost") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 20, hjust = 1, size = 8),  # Adjust the size as needed
+          axis.title.x = element_text(size = 5),  # Adjust title size if needed
+          axis.title.y = element_text(size = 5))  # Adjust title size if needed
+
+
+# To save the plot with a transparent background
+ggsave("comparison_plot.png", bg = "transparent")
+
+
+
+# Assuming 'comparison' is a data frame with transportation costs already calculated
+# Sum the transportation costs into a single metric for each location
+comparison$Total_Transportation_Costs <- comparison$Avg_OneWayTicket +
+    comparison$Avg_MonthlyPass +
+    comparison$Avg_TaxiStart +
+    comparison$Avg_Taxi1km +
+    comparison$Avg_Taxi1hour
+# Now we'll have only one category, so we remove the need for a long format
+comparison$Location <- row.names(comparison)
+comparison <- comparison[c("Location", "Total_Transportation_Costs")]
+
+# Google's branding colors for California and National Average
+google_colors <- c("California" = "#4285F4", "National Average" = "#DB4437") # Blue and Red from Google's palette
+
+# Improve the plot with the Google color palette
+ggplot(comparison, aes(x = Location, y = Total_Transportation_Costs, fill = Location)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    scale_fill_manual(values = google_colors) +
+    labs(title = "Comparison of Transportation Costs",
+         subtitle = "California vs National Average",
+         x = "Cost of Transportation",
+         y = "Total Cost (USD)") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5, size = 10),
+          legend.title = element_blank(),
+          plot.title = element_text(size = 14, face = "bold"),
+          plot.subtitle = element_text(size = 12),
+          axis.title = element_text(size = 12, face = "bold")) +
+    geom_text(aes(label = sprintf("%.2f", Total_Transportation_Costs)), position = position_dodge(width = 0.5), vjust = -0.25, size = 3)
+
+# Note: Adjust the size parameter as needed for a better fit in your plot
+
+
+
+
+
+
+
+library(dplyr)
+library(ggplot2)
+
+google_colors <- c("#4285F4", "#DB4437", "#F4B400", "#0F9D58", "gray") # Blue, Red, Yellow, Green, Gray
+library(dplyr)
+library(ggplot2)
+library(readr)
+
+# Load your data
+data <- read_csv("path_to_your_dataset.csv")
+
+library(dplyr)
+library(ggplot2)
+library(readr)
+
+# Load your data
+data <- read_csv("path_to_your_dataset.csv")
+
+# Calculate average cost for each category across all cities
+data <- data %>%
+    mutate(
+        Avg_Meal_Cost = Meal_Inexpensive_Restaurant_USD
+    ) %>%
+    drop_na(Avg_Meal_Cost) # Remove rows with NA values in Avg_Meal_Cost
+
+# Extract California and National Average for reference
+reference_data <- data %>%
+    filter(State %in% c("California", "National Average"))
+
+# Define the function to select top 5 and bottom 5 cities for a category
+get_cities <- function(data, cost_column) {
+    top_cities <- data %>%
+        arrange(!!sym(cost_column)) %>%
+        slice_head(n = 5)
+    
+    bottom_cities <- data %>%
+        arrange(desc(!!sym(cost_column))) %>%
+        slice_tail(n = 5)
+    
+    bind_rows(top_cities, bottom_cities)
+}
+
+# Get top and bottom cities for Avg_Meal_Cost
+cities <- get_cities(data, "Avg_Meal_Cost")
+
+# Create plots for Avg_Meal_Cost
+plot_meal <- cities %>%
+    bind_rows(reference_data %>% select(City, Avg_Meal_Cost)) %>%
+    ggplot(aes(x = reorder(City, Avg_Meal_Cost), y = Avg_Meal_Cost, fill = City)) +
+    geom_bar(stat = "identity") +
+    scale_fill_manual(values = c(rep("gray", 10), "blue", "red")) + # Colors for top/bottom cities, CA and National Average
+    labs(title = "Meal Cost Efficiency: Top 5 vs Bottom 5 Cities",
+         x = "", y = "Average Meal Cost (USD)") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1),
+          legend.position = "none")
+
+# Display the plot for meals
+print(plot_meal)
+
+
+# Assuming 'data' is your loaded dataset and 'data_quality_column' is the name of your data quality column
+
+# Calculate the proportion of high-quality data
+high_quality_proportion <- mean(data$if_Numbeo_considers_that_more_contributors_are_needed_to_increase_data_quality_else
+ == 1) # Replace 'High' with the actual value indicating high quality
+
+# Convert the proportion to a percentage
+high_quality_percentage <- high_quality_proportion * 100
+high_quality_percentage
+
+
+# Assuming 'data' is your dataset and 'data_quality_column' is your data quality column
+library(ggplot2)
+
+# Create a table of frequencies for the data quality
+quality_table <- table(data$if_Numbeo_considers_that_more_contributors_are_needed_to_increase_data_quality_else)
+
+# Create a pie chart
+ggplot(data, aes(x = "", fill = factor(if_Numbeo_considers_that_more_contributors_are_needed_to_increase_data_quality_else))) +
+    geom_bar(width = 1) +
+    coord_polar(theta = "y") +
+    labs(fill = "Data Quality", title = "Data Quality Distribution")
